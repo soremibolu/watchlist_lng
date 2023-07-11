@@ -1,7 +1,7 @@
 import { Lightning, Colors } from "@lightningjs/sdk";
 import { Color } from "../Utils/colors";
 import Grid from "../Components/Grid";
-import data from "../data/items";
+import data from "../data/items.json";
 import { Data, getAllBookmarks } from "../data/bookmarkedData";
 
 interface HomeTemplateSpec extends Lightning.Component.TemplateSpec {
@@ -60,7 +60,7 @@ export default class Home
     const mainData: Data[] = [];
 
     data.forEach((item) => {
-      const items: Data = { ...item, bookmarkStatus: false, type: "add" };
+      const items: Data = { ...item, bookmarkStatus: false };
       getAllBookmarks().forEach((bookmarked) => {
         if (items.title === bookmarked.title) {
           items.bookmarkStatus = true;

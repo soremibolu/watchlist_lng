@@ -5,7 +5,6 @@ export type Data = {
   photo_width: number;
   photo_height: number;
   bookmarkStatus: boolean;
-  type?: "add" | "remove";
 };
 
 let bookmarks: Data[] = [];

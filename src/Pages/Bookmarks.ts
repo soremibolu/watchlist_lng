@@ -58,7 +58,7 @@ export default class Bookmarks
     const mainData: Data[] = [];
 
     getAllBookmarks().forEach((item) => {
-      const items: Data = { ...item, bookmarkStatus: true, type: "remove" };
+      const items: Data = { ...item, bookmarkStatus: true };
       mainData.push(items);
     });
     this.Grid.items = mainData;

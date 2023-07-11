@@ -4,6 +4,7 @@ export const data = [
     year: 2022,
     poster: "assets/1.jpg",
     photo_width: 900,
+    ratings: "",
     photo_height: 1289,
   },
   {
@@ -11,6 +12,7 @@ export const data = [
     year: 2023,
     poster: "assets/2.jpg",
     photo_width: 450,
+    ratings: "",
     photo_height: 630,
   },
   {
@@ -18,6 +20,7 @@ export const data = [
     year: 2022,
     poster: "assets/3.jpg",
     photo_width: 8699,
+    ratings: "",
     photo_height: 12599,
   },
   {
@@ -25,6 +28,7 @@ export const data = [
     year: 2023,
     poster: "assets/4.jpg",
     photo_width: 768,
+    ratings: "",
     photo_height: 1138,
   },
   {
@@ -32,6 +36,7 @@ export const data = [
     year: 1981,
     poster: "assets/5.jpg",
     photo_width: 942,
+    ratings: "",
     photo_height: 1386,
   },
   {
@@ -39,6 +44,7 @@ export const data = [
     year: 2023,
     poster: "assets/6.jpg",
     photo_width: 600,
+    ratings: "",
     photo_height: 889,
   },
   {
@@ -46,6 +52,7 @@ export const data = [
     year: 1997,
     poster: "assets/7.jpg",
     photo_width: 1280,
+    ratings: "",
     photo_height: 1905,
   },
   {
@@ -53,6 +60,7 @@ export const data = [
     year: 2018,
     poster: "assets/8.jpg",
     photo_width: 1200,
+    ratings: "",
     photo_height: 1777,
   },
 ];
