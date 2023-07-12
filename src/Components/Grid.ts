@@ -41,23 +41,31 @@ export default class Grid
   }
 
   set items(data: Data[]) {
-    data.forEach((items: Data, index: number) => {
-      const cardWidth = Card.width + this.offset;
-      const cardHeight = Card.height + 100;
+    if (data.length === 0) {
+      this.ItemsContainer.children = [];
+      Router.focusWidget("Menu");
+    } else {
+      Router.focusPage();
+      data.forEach((items: Data, index: number) => {
+        const cardWidth = Card.width + this.offset;
+        const cardHeight = Card.height + 100;
 
-      const card = this.stage.element<typeof Card>({
-        type: Card,
-        signals: {
-          created: "_created",
-        },
-        items,
-        x:
-          (index >= this.numberOfColumns ? index - this.numberOfColumns : index) * cardWidth +
-          this.offset / 2,
-        y: index >= this.numberOfColumns ? cardHeight : 0,
+        const card = this.stage.element<typeof Card>({
+          type: Card,
+          items,
+          passSignals: {
+            action: "action",
+          },
+          x:
+            (index >= this.numberOfColumns ? index - this.numberOfColumns : index) * cardWidth +
+            this.offset / 2,
+          y: index >= this.numberOfColumns ? cardHeight : 0,
+        });
+        this.ItemsContainer?.childList.add(card);
       });
-      this.ItemsContainer?.childList.add(card);
-    });
+
+      this.index = this.index > data.length - 1 ? data.length - 1 : this.index;
+    }
   }
 
   override _getFocused() {

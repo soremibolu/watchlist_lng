@@ -1,9 +1,10 @@
 import type { Router } from "@lightningjs/sdk";
 import Home from "../Pages/Home";
 import Bookmarks from "../Pages/Bookmarks";
+import Edit from "../Pages/Edit";
 
 export const routes: Router.Config = {
-  root: "home",
+  root: "edit",
   routes: [
     {
       path: "home",
@@ -14,6 +15,10 @@ export const routes: Router.Config = {
       path: "bookmarks",
       component: Bookmarks,
       widgets: ["menu"],
+    },
+    {
+      path: "edit",
+      component: Edit,
     },
   ],
 };

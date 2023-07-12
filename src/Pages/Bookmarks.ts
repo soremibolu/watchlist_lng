@@ -1,26 +1,20 @@
 import { Lightning, Colors } from "@lightningjs/sdk";
 import { Color } from "../Utils/colors";
 import Grid from "../Components/Grid";
-import { Data, getAllBookmarks } from "../data/bookmarkedData";
+import { bookmarks$, Data } from "../data/bookmarkedData";
+import { Popup } from "../Components/actionPopup";
 
 interface BookmarksTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
     Title: object;
     Grid: typeof Grid;
   };
+  Popup: typeof Popup;
 }
 
 export interface BookmarksTypeConfig extends Lightning.Component.TypeConfig {
   IsPage: true;
 }
-
-export type CardProps = {
-  title: string;
-  year: number;
-  poster: string;
-  photo_width: number;
-  photo_height: number;
-};
 
 export default class Bookmarks
   extends Lightning.Component<BookmarksTemplateSpec, BookmarksTypeConfig>
@@ -46,25 +40,60 @@ export default class Bookmarks
         Grid: {
           type: Grid,
           y: 150,
+          signals: {
+            action: "action",
+          },
         },
+      },
+      Popup: {
+        type: Popup,
+        signals: {
+          closePopup: "closePopup",
+        },
+        visible: false,
       },
     };
   }
 
   Grid = this.getByRef("Container")!.getByRef("Grid")!;
 
-  override _active() {
-    this.Grid.items = [];
-    const mainData: Data[] = [];
+  performAction = false;
 
-    getAllBookmarks().forEach((item) => {
-      const items: Data = { ...item, bookmarkStatus: true };
-      mainData.push(items);
+  override _active() {
+    bookmarks$().subscribe((items) => {
+      this.Grid.items = [];
+      const mainData = items.map((data) => {
+        return { ...data, bookmarkStatus: true };
+      });
+      this.Grid.patch({
+        items: mainData,
+      });
     });
-    this.Grid.items = mainData;
+  }
+
+  action(info: Data) {
+    this.performAction = true;
+    this.patch({
+      Popup: {
+        items: info,
+        visible: true,
+      },
+    });
+  }
+
+  closePopup() {
+    this.performAction = false;
+    this.patch({
+      Popup: {
+        visible: false,
+      },
+    });
   }
 
   override _getFocused() {
+    if (this.performAction) {
+      return this.getByRef("Popup");
+    }
     return this.Grid;
   }
 }

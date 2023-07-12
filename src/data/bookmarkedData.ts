@@ -1,3 +1,6 @@
+import { BehaviorSubject, distinctUntilChanged, Observable } from "rxjs";
+import data from "./items";
+
 export type Data = {
   title: string;
   year: number;
@@ -7,29 +10,51 @@ export type Data = {
   bookmarkStatus: boolean;
 };
 
-let bookmarks: Data[] = [];
+const myBookmarks = new BehaviorSubject<Data[]>([]);
+
+const allData = new BehaviorSubject<Data[]>([]);
+
+const completeData = data.map((item) => {
+  const items: Data = { ...item, bookmarkStatus: false };
+  bookmarks$().subscribe((bookmarked) => {
+    bookmarked.forEach((item) => {
+      if (items.title === item.title) {
+        items.bookmarkStatus = true;
+      }
+    });
+  });
+  return items;
+});
+
+allData.next(completeData);
 
 export function updateBookmarks(state: Data): void {
-  const newBookmarks = bookmarks.filter((object) => {
+  let bookmarkData: Data[] = [];
+  const getBookmarkData = bookmarks$().subscribe((data) => {
+    bookmarkData = data;
+  });
+  const filteredBookmarks = bookmarkData.filter((object) => {
     return object.title === state.title;
   });
 
-  if (newBookmarks.length > 0) {
-    deleteFromBookmarks(state);
+  if (filteredBookmarks.length > 0) {
+    // delete
+    const bookmarksDataWithoutFiltered = bookmarkData.filter((object) => {
+      return object.title !== state.title;
+    });
+
+    myBookmarks.next(bookmarksDataWithoutFiltered);
   } else {
-    bookmarks.push(state);
+    myBookmarks.next([...bookmarkData, state]);
   }
-  console.log(bookmarks.length);
+
+  getBookmarkData.unsubscribe();
 }
 
-export function deleteFromBookmarks(state: Data) {
-  const newBookmarks = bookmarks.filter((object) => {
-    return object.title !== state.title;
-  });
-
-  bookmarks = newBookmarks;
+export function bookmarks$(): Observable<Data[]> {
+  return myBookmarks.asObservable().pipe(distinctUntilChanged());
 }
 
-export function getAllBookmarks(): Data[] {
-  return bookmarks;
+export function allData$(): Observable<Data[]> {
+  return allData.asObservable().pipe(distinctUntilChanged());
 }

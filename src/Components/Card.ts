@@ -1,7 +1,8 @@
+/* eslint-disable no-unused-vars */
 import { Colors, Lightning, Utils } from "@lightningjs/sdk";
 import { Color } from "../Utils/colors";
 import { Icons } from "./Menu";
-import { Data, updateBookmarks } from "../data/bookmarkedData";
+import { Data } from "../data/bookmarkedData";
 
 interface CardTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
@@ -15,7 +16,7 @@ interface CardTemplateSpec extends Lightning.Component.TemplateSpec {
 }
 
 interface CardSignalMap extends Lightning.Component.SignalMap {
-  created(): void;
+  action(details: Data): void;
 }
 
 interface CardTypeConfig extends Lightning.Component.TypeConfig {
@@ -91,8 +92,6 @@ export class Card
     };
   }
 
-  isSelected = false;
-
   Border = this.getByRef("Container")!.getByRef("Border")!;
 
   _items!: Data;
@@ -100,8 +99,6 @@ export class Card
   set items(cardItems: Data) {
     const { title, year, poster, bookmarkStatus } = cardItems;
     this._items = cardItems;
-
-    this.isSelected = bookmarkStatus;
     this.changeBookmark(bookmarkStatus);
 
     this.patch({
@@ -135,10 +132,6 @@ export class Card
     });
   }
 
-  override _enable() {
-    this.signal("created");
-  }
-
   static get height() {
     return 310;
   }
@@ -148,9 +141,7 @@ export class Card
   }
 
   override _handleEnter() {
-    this.isSelected = !this.isSelected;
-    this.changeBookmark(this.isSelected);
-    updateBookmarks(this._items);
+    this.signal("action", this._items);
   }
 
   override _focus() {

@@ -1,27 +1,21 @@
 import { Lightning, Colors } from "@lightningjs/sdk";
 import { Color } from "../Utils/colors";
 import Grid from "../Components/Grid";
-import data from "../data/items.json";
-import { Data, getAllBookmarks } from "../data/bookmarkedData";
+import { allData$, bookmarks$, Data } from "../data/bookmarkedData";
+import { combineLatest } from "rxjs";
+import { Popup } from "../Components/actionPopup";
 
 interface HomeTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
     Title: object;
     Grid: typeof Grid;
   };
+  Popup: typeof Popup;
 }
 
 export interface HomeTypeConfig extends Lightning.Component.TypeConfig {
   IsPage: true;
 }
-
-export type CardProps = {
-  title: string;
-  year: number;
-  poster: string;
-  photo_width: number;
-  photo_height: number;
-};
 
 export default class Home
   extends Lightning.Component<HomeTemplateSpec, HomeTypeConfig>
@@ -47,35 +41,65 @@ export default class Home
         Grid: {
           type: Grid,
           y: 150,
+          signals: {
+            action: "action",
+          },
         },
+      },
+      Popup: {
+        type: Popup,
+        signals: {
+          closePopup: "closePopup",
+        },
+        visible: false,
       },
     };
   }
 
   Grid = this.getByRef("Container")!.getByRef("Grid")!;
 
-  override _active() {
-    this.Grid.items = [];
-    // Router.reload()
-    const mainData: Data[] = [];
+  performAction = false;
 
-    data.forEach((item) => {
-      const items: Data = { ...item, bookmarkStatus: false };
-      getAllBookmarks().forEach((bookmarked) => {
-        if (items.title === bookmarked.title) {
-          items.bookmarkStatus = true;
-        }
+  override _active() {
+    combineLatest([allData$(), bookmarks$()]).subscribe(([data, bookmarks]) => {
+      const mainData = data.map((item) => {
+        const items: Data = { ...item, bookmarkStatus: false };
+        bookmarks.forEach((item) => {
+          if (items.title === item.title) {
+            items.bookmarkStatus = true;
+          }
+        });
+        return items;
       });
-      mainData.push(items);
+
+      this.Grid.items = mainData;
     });
-    this.Grid.items = mainData;
+    this._refocus();
   }
 
-  override _detach() {
-    this.Grid.items = [];
+  action(info: Data) {
+    this.performAction = true;
+    this.patch({
+      Popup: {
+        items: info,
+        visible: true,
+      },
+    });
+  }
+
+  closePopup() {
+    this.performAction = false;
+    this.patch({
+      Popup: {
+        visible: false,
+      },
+    });
   }
 
   override _getFocused() {
+    if (this.performAction) {
+      return this.getByRef("Popup");
+    }
     return this.Grid;
   }
 }
