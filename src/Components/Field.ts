@@ -9,6 +9,7 @@ interface FieldTemplateSpec extends Lightning.Component.TemplateSpec {
     Text: object;
   };
   fieldText: string;
+  isFocused: boolean;
 }
 
 export class Field
@@ -17,11 +18,11 @@ export class Field
 {
   static override _template(): Lightning.Component.Template<FieldTemplateSpec> {
     return {
-      w: 350,
+      w: 650,
       h: 100,
       Container: {
         Field: {
-          w: 350,
+          w: 650,
           h: 60,
           rect: true,
           color: Colors(Color.Focused).get(),
@@ -44,6 +45,8 @@ export class Field
     };
   }
 
+  shouldStayFocused = false;
+
   set fieldText(text: string) {
     this.patch({
       Container: {
@@ -54,29 +57,30 @@ export class Field
     });
   }
 
-  override _focus() {
+  makeFieldFocused(status: boolean) {
     this.patch({
       Container: {
         Field: {
-          color: Colors(Color.White).get(),
+          color: Colors(status ? Color.White : Color.Focused).get(),
         },
         Text: {
-          color: Colors(Color.Focused).get(),
+          color: Colors(status ? Color.Focused : Color.White).get(),
         },
       },
     });
   }
 
+  set isFocused(status: boolean) {
+    this.makeFieldFocused(status);
+    this.shouldStayFocused = status;
+  }
+
+  override _focus() {
+    this.makeFieldFocused(true);
+  }
+
   override _unfocus() {
-    this.patch({
-      Container: {
-        Field: {
-          color: Colors(Color.Focused).get(),
-        },
-        Text: {
-          color: Colors(Color.White).get(),
-        },
-      },
-    });
+    this.makeFieldFocused(this.shouldStayFocused);
+    this.shouldStayFocused = false;
   }
 }

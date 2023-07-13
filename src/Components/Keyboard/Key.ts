@@ -85,6 +85,10 @@ export class Key
     });
   }
 
+  get title() {
+    return this.titleText;
+  }
+
   set icon(value: string) {
     this.Container.patch({
       Icon: { texture: Lightning.Tools.getSvgTexture(value, 69, 30) },

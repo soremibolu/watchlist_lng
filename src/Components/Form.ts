@@ -1,8 +1,10 @@
-import { Colors, Lightning } from "@lightningjs/sdk";
+import { Colors, Lightning, Router } from "@lightningjs/sdk";
 import { Color } from "../Utils/colors";
 import Button from "./button";
 import { Field } from "./Field";
 import Keyboard from "./Keyboard/Keyboard";
+import data from "../data/items";
+import { bookmarks$, Data, updateMainData } from "../data/bookmarkedData";
 
 interface FormTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
@@ -17,18 +19,11 @@ interface FormTemplateSpec extends Lightning.Component.TemplateSpec {
     };
   };
   Keyboard: typeof Keyboard;
-}
-
-interface FormSignalMap extends Lightning.Component.SignalMap {
-  focusOnKeyboard(): void;
-}
-
-interface FormTypeConfig extends Lightning.Component.TypeConfig {
-  SignalMapType: FormSignalMap;
+  movieTitle: string;
 }
 
 export class Form
-  extends Lightning.Component<FormTemplateSpec, FormTypeConfig>
+  extends Lightning.Component<FormTemplateSpec>
   implements Lightning.Component.ImplementTemplateSpec<FormTemplateSpec>
 {
   static override _template(): Lightning.Component.Template<FormTemplateSpec> {
@@ -51,8 +46,6 @@ export class Form
           justifyContent: "center",
         },
         Text: {
-          y: 25,
-          x: 20,
           text: {
             text: "Update Movie",
             textColor: Colors(Color.Focused).get(),
@@ -61,7 +54,7 @@ export class Form
           },
         },
         Fields: {
-          y: 50,
+          y: 20,
           w: (w) => w,
           h: (h) => h / 2,
           flex: {
@@ -83,7 +76,7 @@ export class Form
         Buttons: {
           w: (w) => w,
           h: 38,
-          y: 50,
+          y: 20,
           flex: {
             direction: "row",
             alignItems: "center",
@@ -102,17 +95,34 @@ export class Form
       },
       Keyboard: {
         type: Keyboard,
+        signals: {
+          keyPressed: "keyPressed",
+          spacePressed: "spacePressed",
+          backPressed: "backPressed",
+        },
       },
     };
   }
 
-  Title = this.getByRef("Container")!.getByRef("Fields")!.getByRef("Title");
+  formIndex = 0;
 
-  Year = this.getByRef("Container")!.getByRef("Fields")!.getByRef("Year");
+  buttonIndex = 0;
 
-  Save = this.getByRef("Container")!.getByRef("Buttons")!.getByRef("Save");
+  idTitle = "";
 
-  Cancel = this.getByRef("Container")!.getByRef("Buttons")!.getByRef("Cancel");
+  title = "";
+
+  year = "";
+
+  section: "keyboard" | "form" | "buttons" = "form";
+
+  Title = this.getByRef("Container")!.getByRef("Fields")!.getByRef("Title")!;
+
+  Year = this.getByRef("Container")!.getByRef("Fields")!.getByRef("Year")!;
+
+  Save = this.getByRef("Container")!.getByRef("Buttons")!.getByRef("Save")!;
+
+  Cancel = this.getByRef("Container")!.getByRef("Buttons")!.getByRef("Cancel")!;
 
   static get height() {
     return 310;
@@ -122,10 +132,28 @@ export class Form
     return 350;
   }
 
-  formIndex = 0;
-  buttonIndex = 0;
+  set movieTitle(label: string) {
+    this.title = label;
+    this.idTitle = label;
 
-  section: "keyboard" | "form" | "buttons" = "form";
+    const filteredData = data.filter((item) => item.title === label);
+
+    if (filteredData.length > 0 && filteredData[0]) {
+      this.year = filteredData[0].year;
+      this.patch({
+        Container: {
+          Fields: {
+            Title: {
+              fieldText: this.title,
+            },
+            Year: {
+              fieldText: this.year,
+            },
+          },
+        },
+      });
+    }
+  }
 
   getFocusedSec(section: "keyboard" | "form" | "buttons") {
     if (section === "keyboard") return this.getByRef("Keyboard");
@@ -149,9 +177,85 @@ export class Form
     return this.getFocusedSec(this.section);
   }
 
+  override _handleEnter() {
+    if (this.section === "form") {
+      if (this.formIndex === 0) {
+        this.Title.isFocused = true;
+      } else {
+        this.Year.isFocused = true;
+      }
+      this.section = "keyboard";
+    }
+
+    if (this.section === "buttons") {
+      if (this.buttonIndex === 0) {
+        let bookMarkData: Data[] = [];
+        bookmarks$().subscribe((data) => {
+          bookMarkData = data;
+        });
+
+        const checkifMatch = data.filter(
+          (data) => data.title === this.title && data.year === this.year,
+        );
+
+        if (checkifMatch.length === 0) {
+          const newData = data.map((item) => {
+            const itemData = { ...item, bookmarkStatus: false };
+            bookMarkData.forEach((bookmark) => {
+              if (bookmark.title === item.title) {
+                itemData.bookmarkStatus = true;
+              }
+            });
+
+            if (itemData.title === this.idTitle) {
+              itemData.title = this.title;
+              itemData.year = this.year;
+            }
+            return itemData;
+          });
+          updateMainData(newData);
+        }
+      }
+      Router.navigate("home");
+    }
+  }
+
+  keyPressed(key: string) {
+    if (this.formIndex === 0) {
+      this.title = `${this.title}${key}`;
+      this.Title.fieldText = this.title;
+    } else {
+      this.year = `${this.year}${key}`;
+      this.Year.fieldText = this.year;
+    }
+  }
+
+  spacePressed() {
+    if (this.formIndex === 0) {
+      this.title = `${this.title} `;
+      this.Title.fieldText = this.title;
+    } else {
+      this.year = `${this.year} `;
+      this.Year.fieldText = this.year;
+    }
+  }
+
+  backPressed() {
+    if (this.formIndex === 0) {
+      this.title = this.title.substring(0, this.title.length - 1);
+      this.Title.fieldText = this.title;
+    } else {
+      this.year = this.year.substring(0, this.year.length - 1);
+      console.log(this.year);
+      this.Year.fieldText = this.year;
+    }
+  }
+
   override _handleUp() {
     if (this.section === "keyboard") {
       this.section = "buttons";
+      this.Title.isFocused = false;
+      this.Year.isFocused = false;
       return true;
     }
 
@@ -164,6 +268,7 @@ export class Form
 
     if (this.section === "buttons") {
       this.section = "form";
+      this.formIndex = 1;
       return true;
     }
   }

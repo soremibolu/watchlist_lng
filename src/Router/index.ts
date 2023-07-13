@@ -4,7 +4,7 @@ import Bookmarks from "../Pages/Bookmarks";
 import Edit from "../Pages/Edit";
 
 export const routes: Router.Config = {
-  root: "edit",
+  root: "home",
   routes: [
     {
       path: "home",
@@ -17,7 +17,7 @@ export const routes: Router.Config = {
       widgets: ["menu"],
     },
     {
-      path: "edit",
+      path: "edit/:title",
       component: Edit,
     },
   ],

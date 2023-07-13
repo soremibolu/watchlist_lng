@@ -3,7 +3,7 @@ import data from "./items";
 
 export type Data = {
   title: string;
-  year: number;
+  year: string;
   poster: string;
   photo_width: number;
   photo_height: number;
@@ -27,6 +27,10 @@ const completeData = data.map((item) => {
 });
 
 allData.next(completeData);
+
+export function updateMainData(data: Data[]) {
+  allData.next(data);
+}
 
 export function updateBookmarks(state: Data): void {
   let bookmarkData: Data[] = [];

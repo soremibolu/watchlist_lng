@@ -1,4 +1,4 @@
-import { Colors, Lightning } from "@lightningjs/sdk";
+import { Colors, Lightning, Router } from "@lightningjs/sdk";
 import { bookmarks$, Data, updateBookmarks } from "../data/bookmarkedData";
 import { Color } from "../Utils/colors";
 import Button from "./button";
@@ -116,6 +116,7 @@ export class Popup
 
   set items(data: Data) {
     this._items = data;
+    this.focusedButton = "Bookmark";
     let isBookmarked = false;
     bookmarks$().subscribe((item) => {
       const filteredBookmarks = item.filter((object) => {
@@ -144,8 +145,12 @@ export class Popup
     if (this.focusedButton === "Bookmark") {
       updateBookmarks(this._items);
     } else {
-      //
+      Router.navigate(`edit/${this._items.title}`);
     }
+    this.signal("closePopup");
+  }
+
+  override _handleBack() {
     this.signal("closePopup");
   }
 }

@@ -41,6 +41,7 @@ export default class Edit
 
   override _active() {
     Router.focusPage();
+    this.Form.movieTitle = this.params?.title || "";
   }
 
   override _getFocused() {
