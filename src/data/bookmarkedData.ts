@@ -1,32 +1,30 @@
 import { BehaviorSubject, distinctUntilChanged, Observable } from "rxjs";
-import data from "./items";
 
 export type Data = {
   title: string;
   year: string;
   poster: string;
-  photo_width: number;
-  photo_height: number;
   bookmarkStatus: boolean;
 };
 
 const myBookmarks = new BehaviorSubject<Data[]>([]);
 
 const allData = new BehaviorSubject<Data[]>([]);
-
-const completeData = data.map((item) => {
-  const items: Data = { ...item, bookmarkStatus: false };
-  bookmarks$().subscribe((bookmarked) => {
-    bookmarked.forEach((item) => {
-      if (items.title === item.title) {
-        items.bookmarkStatus = true;
-      }
+export function getMain(data: Data[]) {
+  const completeData = data.map((item) => {
+    const items: Data = { ...item, bookmarkStatus: false };
+    bookmarks$().subscribe((bookmarked) => {
+      bookmarked.forEach((item) => {
+        if (items.title === item.title) {
+          items.bookmarkStatus = true;
+        }
+      });
     });
+    return items;
   });
-  return items;
-});
 
-allData.next(completeData);
+  updateMainData(completeData);
+}
 
 export function updateMainData(data: Data[]) {
   allData.next(data);
@@ -60,5 +58,5 @@ export function bookmarks$(): Observable<Data[]> {
 }
 
 export function allData$(): Observable<Data[]> {
-  return allData.asObservable().pipe(distinctUntilChanged());
+  return allData.asObservable();
 }

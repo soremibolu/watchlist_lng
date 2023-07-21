@@ -3,8 +3,12 @@ import { Color } from "../Utils/colors";
 import Button from "./button";
 import { Field } from "./Field";
 import Keyboard from "./Keyboard/Keyboard";
-import data from "../data/items";
-import { bookmarks$, Data, updateMainData } from "../data/bookmarkedData";
+import {
+  bookmarks$,
+  Data,
+  updateMainData,
+  allData$,
+} from "../data/bookmarkedData";
 
 interface FormTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
@@ -124,6 +128,8 @@ export class Form
 
   Cancel = this.getByRef("Container")!.getByRef("Buttons")!.getByRef("Cancel")!;
 
+  data: Data[] = [];
+
   static get height() {
     return 310;
   }
@@ -136,7 +142,7 @@ export class Form
     this.title = label;
     this.idTitle = label;
 
-    const filteredData = data.filter((item) => item.title === label);
+    const filteredData = this.data.filter((item) => item.title === label);
 
     if (filteredData.length > 0 && filteredData[0]) {
       this.year = filteredData[0].year;
@@ -153,6 +159,12 @@ export class Form
         },
       });
     }
+  }
+
+  override _active() {
+    allData$().subscribe((mainData) => {
+      this.data = mainData;
+    });
   }
 
   getFocusedSec(section: "keyboard" | "form" | "buttons") {
@@ -194,12 +206,12 @@ export class Form
           bookMarkData = data;
         });
 
-        const checkifMatch = data.filter(
-          (data) => data.title === this.title && data.year === this.year,
+        const checkifMatch = this.data.filter(
+          (data) => data.title === this.title && data.year === this.year
         );
 
         if (checkifMatch.length === 0) {
-          const newData = data.map((item) => {
+          const newData = this.data.map((item) => {
             const itemData = { ...item, bookmarkStatus: false };
             bookMarkData.forEach((bookmark) => {
               if (bookmark.title === item.title) {
@@ -246,7 +258,6 @@ export class Form
       this.Title.fieldText = this.title;
     } else {
       this.year = this.year.substring(0, this.year.length - 1);
-      console.log(this.year);
       this.Year.fieldText = this.year;
     }
   }

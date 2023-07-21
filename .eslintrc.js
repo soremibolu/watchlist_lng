@@ -29,11 +29,10 @@ module.exports = {
     "prettier/prettier": [
       "warn",
       {
-        trailingComma: "all",
+        trailingComma: "es5",
         singleQuote: false,
         tabWidth: 2,
         semi: true,
-        printWidth: 100,
       },
     ],
   },

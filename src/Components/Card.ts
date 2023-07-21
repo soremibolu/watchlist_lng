@@ -6,6 +6,7 @@ import { Data } from "../data/bookmarkedData";
 
 interface CardTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
+    Background: object;
     Border: object;
     Card: object;
     Year: object;
@@ -30,6 +31,12 @@ export class Card
   static override _template(): Lightning.Component.Template<CardTemplateSpec> {
     return {
       Container: {
+        Background: {
+          w: 350,
+          h: 250,
+          rect: true,
+          color: Colors(Color.Focused).alpha(0.8).get(),
+        },
         Card: {
           w: 350,
           h: 250,
@@ -104,7 +111,7 @@ export class Card
     this.patch({
       Container: {
         Card: {
-          src: Utils.asset(poster),
+          src: poster ? Utils.asset(poster) : undefined,
         },
         Year: {
           text: {

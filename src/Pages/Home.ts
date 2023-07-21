@@ -1,9 +1,10 @@
 import { Lightning, Colors } from "@lightningjs/sdk";
 import { Color } from "../Utils/colors";
 import Grid from "../Components/Grid";
-import { allData$, bookmarks$, Data } from "../data/bookmarkedData";
+import { allData$, bookmarks$, Data, getMain } from "../data/bookmarkedData";
 import { combineLatest } from "rxjs";
 import { Popup } from "../Components/actionPopup";
+import data from "../data/items";
 
 interface HomeTemplateSpec extends Lightning.Component.TemplateSpec {
   Container: {
@@ -60,6 +61,10 @@ export default class Home
 
   performAction = false;
 
+  override _init() {
+    getMain(data as Data[]);
+  }
+
   override _active() {
     combineLatest([allData$(), bookmarks$()]).subscribe(([data, bookmarks]) => {
       const mainData = data.map((item) => {
@@ -74,6 +79,7 @@ export default class Home
 
       this.Grid.items = mainData;
     });
+
     this._refocus();
   }
 
